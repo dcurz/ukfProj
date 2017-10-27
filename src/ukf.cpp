@@ -60,13 +60,53 @@ UKF::~UKF() {}
  * either radar or laser.
  */
 void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
-  /**
-  TODO:
+  /*****************************************************************************
+   *  Initialization
+   ****************************************************************************/
+  if (!is_initialized_) {
+    /**
+    TODO:
+      * Initialize the state ekf_.x_ with the first measurement.
+      * Create the covariance matrix.
+      * Remember: you'll need to convert radar from polar to cartesian coordinates.
+    */
+    // first measurement
+    cout << "EKF: " << endl;
+    ekf_.x_ = VectorXd(4);
+    //ekf_.x_ << 1, 1, 1, 1;
 
-  Complete this function! Make sure you switch between lidar and radar
-  measurements.
-  */
-}
+    if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
+      /**
+      Convert radar from polar to cartesian coordinates and initialize state.
+      */
+      ekf_.x_<<measurement_pack.raw_measurements_[0] * cos(measurement_pack.raw_measurements_[1]),
+              measurement_pack.raw_measurements_[0] * sin(measurement_pack.raw_measurements_[1]),
+              measurement_pack.raw_measurements_[2] * cos(measurement_pack.raw_measurements_[1]),
+              measurement_pack.raw_measurements_[2] * sin(measurement_pack.raw_measurements_[1]);
+
+
+    }
+    else if (measurement_pack.sensor_type_ == MeasurementPackage::LASER) {
+      /**
+      Initialize state.
+      */
+      ekf_.x_<<measurement_pack.raw_measurements_[0], measurement_pack.raw_measurements_[1],0,0;
+    }
+
+    // Initialize covariance matrix
+    ekf_.P_ = MatrixXd(4, 4);
+    ekf_.P_ << 1, 0, 0, 0,
+         0, 1, 0, 0,
+         0, 0, 1000, 0,
+         0, 0, 0, 1000;
+
+    previous_timestamp_ = measurement_pack.timestamp_;
+    // done initializing, no need to predict or update
+    is_initialized_ = true;
+    return;
+  }
+
+//STILL NEED TO DO CALCULATIONS TO PREP FOR AND THEN CALL PREDICTION AND UPDATE FUNCTIONS
 
 /**
  * Predicts sigma points, the state, and the state covariance matrix.
