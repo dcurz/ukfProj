@@ -67,6 +67,8 @@ public:
   ///* Sigma point spreading parameter
   double lambda_;
 
+  MatrixXd Xsig;
+
   /**
    * Constructor
    */

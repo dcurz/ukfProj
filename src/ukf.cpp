@@ -44,14 +44,32 @@ UKF::UKF() {
   // Radar measurement noise standard deviation radius change in m/s
   std_radrd_ = 0.3;
 
-  /**
-  TODO:
+  ///* State dimension
+  int n_x_ = 5;
 
-  Complete the initialization. See ukf.h for other member properties.
+  ///* Augmented state dimension
+  int n_aug_ = 7; 
 
-  Hint: one or more values initialized above might be wildly off...
-  */
+  ///* Sigma point spreading parameter
+  double lambda_ = 3 - n_aug;
+
+  ///* Weights of sigma points
+  VectorXd weights = VectorXd(2*n_aug+1);
+   
+  double weight_0 = lambda/(lambda+n_aug);
+  
+  weights(0) = weight_0;
+  
+  for (int i=1; i<2*n_aug+1; i++) {  
+    double weight = 0.5/(n_aug+lambda);
+    weights(i) = weight;
+
+  //sigma points matrix
+  MatrixXd Xsig = MatrixXd(n_x, 2 * n_x + 1);
+
 }
+
+
 
 UKF::~UKF() {}
 
@@ -120,6 +138,35 @@ void UKF::Prediction(double delta_t) {
   Complete this function! Estimate the object's location. Modify the state
   vector, x_. Predict sigma points, the state, and the state covariance matrix.
   */
+
+//*********************************************************************
+//SIGMA POINTS
+//*********************************************************************
+
+  //calculate square root of P
+  MatrixXd A = P.llt().matrixL();
+
+  //set first column of sigma point matrix
+  Xsig.col(0)  = x;
+
+  //set remaining sigma points
+  for (int i = 0; i < n_x; i++)
+  {
+    Xsig.col(i+1)     = x + sqrt(lambda+n_x) * A.col(i);
+    Xsig.col(i+1+n_x) = x - sqrt(lambda+n_x) * A.col(i);
+  }
+
+
+
+
+
+
+
+
+
+
+
+
 }
 
 /**
