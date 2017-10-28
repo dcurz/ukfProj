@@ -115,8 +115,8 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
     }
 
     // Initialize covariance matrix
-    ukf_.P_ = MatrixXd(5, 5);
-    ukf_.P_ << 	1, 0, 0, 0,0,
+    P_ = MatrixXd(5, 5);
+    P_ << 	1, 0, 0, 0,0,
          		0, 1, 0, 0, 0,
          		0, 0, 100, 0, 0,
          		0, 0, 0, 1, 0,
@@ -135,7 +135,7 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
  * @param {double} delta_t the change in time (in seconds) between the last
  * measurement and this one.
  */
-void UKF::Prediction(double delta_t) {
+void UKF::Prediction(double dt) {
   /**
   TODO:
 
@@ -180,12 +180,12 @@ void UKF::Prediction(double delta_t) {
 //RUN SIG POINTS THROUGH PROCESS MODEL
 //*********************************************************************
 
-  float dt = (measurement_pack.timestamp_ - previous_timestamp_) / 1000000.0; //dt - expressed in seconds
-  previous_timestamp_ = measurement_pack.timestamp_;
+  // float dt = (measurement_pack.timestamp_ - previous_timestamp_) / 1000000.0; //dt - expressed in seconds
+  // previous_timestamp_ = measurement_pack.timestamp_;
 
-  float dt_2 = dt * dt;
-  float dt_3 = dt_2 * dt;
-  float dt_4 = dt_3 * dt;
+  // float dt_2 = dt * dt;
+  // float dt_3 = dt_2 * dt;
+  // float dt_4 = dt_3 * dt;
 
   MatrixXd Xsig_pred = MatrixXd(n_x, 2 * n_aug + 1);
 
@@ -234,8 +234,30 @@ void UKF::Prediction(double delta_t) {
     Xsig_pred(4,i) = yawd_p;
   }
 
+//*********************************************************************
+//Generate true predicted mean and covariance matrices based on predicted sigma points
+//*********************************************************************
 
+  const double M_PI = 3.141592;
 
+//predicted state mean
+  x_.fill(0.0);
+  for (int i = 0; i < 2 * n_aug + 1; i++) {  //iterate over sigma points
+    x_ = x_ + weights(i) * Xsig_pred.col(i);
+  }
+
+  //predicted state covariance matrix
+  P_.fill(0.0);
+  for (int i = 0; i < 2 * n_aug + 1; i++) {  //iterate over sigma points
+
+    // state difference
+    VectorXd x_diff = Xsig_pred.col(i) - x_;
+    //angle normalization
+    while (x_diff(3)> M_PI) x_diff(3)-=2.*M_PI;
+    while (x_diff(3)<-M_PI) x_diff(3)+=2.*M_PI;
+
+    P_ = P_ + weights(i) * x_diff * x_diff.transpose() ;
+  }
 
 }
 
@@ -252,6 +274,17 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
 
   You'll also need to calculate the lidar NIS.
   */
+//*********************************************************************
+//Project sigma points into measurement space (for lidar)
+//*********************************************************************
+
+
+  //create matrix for sigma points in measurement space
+  MatrixXd Zsig = MatrixXd(n_z, 2 * n_aug + 1);	
+
+
+
+
 }
 
 /**
@@ -267,4 +300,63 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
 
   You'll also need to calculate the radar NIS.
   */
+//*********************************************************************
+//Project sigma points into measurement space (for lidar), calculate mean pred measurement (z) and S matrix
+//*********************************************************************
+	
+//Establish radar measurement vector dimension
+  int n_z = 3;
+
+ //create matrix for sigma points in measurement space
+  MatrixXd Zsig = MatrixXd(n_z, 2 * n_aug + 1);	
+
+  //transform sigma points into measurement space
+  for (int i = 0; i < 2 * n_aug + 1; i++) {  //2n+1 simga points
+
+    // extract values for better readibility
+    double p_x = Xsig_pred(0,i);
+    double p_y = Xsig_pred(1,i);
+    double v  = Xsig_pred(2,i);
+    double yaw = Xsig_pred(3,i);
+
+    double v1 = cos(yaw)*v;
+    double v2 = sin(yaw)*v;
+
+    // measurement model
+    Zsig(0,i) = sqrt(p_x*p_x + p_y*p_y);                        //r
+    Zsig(1,i) = atan2(p_y,p_x);                                 //phi
+    Zsig(2,i) = (p_x*v1 + p_y*v2 ) / sqrt(p_x*p_x + p_y*p_y);   //r_dot
+  }
+
+  //mean predicted measurement
+  VectorXd z_pred = VectorXd(n_z);
+  z_pred.fill(0.0);
+  for (int i=0; i < 2*n_aug+1; i++) {
+      z_pred = z_pred + weights(i) * Zsig.col(i);
+  }
+
+  //measurement covariance matrix S
+  MatrixXd S = MatrixXd(n_z,n_z);
+  S.fill(0.0);
+  for (int i = 0; i < 2 * n_aug + 1; i++) {  //2n+1 simga points
+    //residual
+    VectorXd z_diff = Zsig.col(i) - z_pred;
+
+    //angle normalization
+    while (z_diff(1)> M_PI) z_diff(1)-=2.*M_PI;
+    while (z_diff(1)<-M_PI) z_diff(1)+=2.*M_PI;
+
+    S = S + weights(i) * z_diff * z_diff.transpose();
+  }
+
+  //add measurement noise covariance matrix
+  MatrixXd R = MatrixXd(n_z,n_z);
+  R <<    std_radr*std_radr, 0, 0,
+          0, std_radphi*std_radphi, 0,
+          0, 0,std_radrd*std_radrd;
+  S = S + R;
+
+
+
+
 }
