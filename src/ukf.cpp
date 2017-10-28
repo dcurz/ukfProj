@@ -115,11 +115,12 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
     }
 
     // Initialize covariance matrix
-    ukf_.P_ = MatrixXd(4, 4);
-    ukf_.P_ << 1, 0, 0, 0,
-         0, 1, 0, 0,
-         0, 0, 1000, 0,
-         0, 0, 0, 1000;
+    ukf_.P_ = MatrixXd(5, 5);
+    ukf_.P_ << 	1, 0, 0, 0,0,
+         		0, 1, 0, 0, 0,
+         		0, 0, 100, 0, 0,
+         		0, 0, 0, 1, 0,
+         		0, 0, 0, 0, 5;
 
     previous_timestamp_ = measurement_pack.timestamp_;
     // done initializing, no need to predict or update
