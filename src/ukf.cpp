@@ -89,18 +89,21 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
       * Remember: you'll need to convert radar from polar to cartesian coordinates.
     */
     // first measurement
-    cout << "EKF: " << endl;
-    ekf_.x_ = VectorXd(4);
+    //cout << "EKF: " << endl;
+    //ekf_.x_ = VectorXd(4);
     //ekf_.x_ << 1, 1, 1, 1;
 
     if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
       /**
       Convert radar from polar to cartesian coordinates and initialize state.
       */
-      ekf_.x_<<measurement_pack.raw_measurements_[0] * cos(measurement_pack.raw_measurements_[1]),
-              measurement_pack.raw_measurements_[0] * sin(measurement_pack.raw_measurements_[1]),
-              measurement_pack.raw_measurements_[2] * cos(measurement_pack.raw_measurements_[1]),
-              measurement_pack.raw_measurements_[2] * sin(measurement_pack.raw_measurements_[1]);
+      x_<<measurement_pack.raw_measurements_[0] * cos(measurement_pack.raw_measurements_[1]),
+          measurement_pack.raw_measurements_[0] * sin(measurement_pack.raw_measurements_[1]),
+          sqrt(((measurement_pack.raw_measurements_[2] * cos(measurement_pack.raw_measurements_[1]))*
+          (measurement_pack.raw_measurements_[2] * cos(measurement_pack.raw_measurements_[1]))) + 
+          ((measurement_pack.raw_measurements_[2] * sin(measurement_pack.raw_measurements_[1]))*
+          measurement_pack.raw_measurements_[2] * sin(measurement_pack.raw_measurements_[1]))),
+          0,0;
 
 
     }
@@ -108,12 +111,12 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
       /**
       Initialize state.
       */
-      ekf_.x_<<measurement_pack.raw_measurements_[0], measurement_pack.raw_measurements_[1],0,0;
+      ekf_.x_<<measurement_pack.raw_measurements_[0], measurement_pack.raw_measurements_[1],0,0,0;
     }
 
     // Initialize covariance matrix
-    ekf_.P_ = MatrixXd(4, 4);
-    ekf_.P_ << 1, 0, 0, 0,
+    ukf_.P_ = MatrixXd(4, 4);
+    ukf_.P_ << 1, 0, 0, 0,
          0, 1, 0, 0,
          0, 0, 1000, 0,
          0, 0, 0, 1000;
@@ -124,7 +127,7 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
     return;
   }
 
-//STILL NEED TO DO CALCULATIONS TO PREP FOR AND THEN CALL PREDICTION AND UPDATE FUNCTIONS
+//STILL NEED TO DO CALCULATIONS, FIX P INITIALIZATION, TO PREP FOR AND THEN CALL PREDICTION AND UPDATE FUNCTIONS
 
 /**
  * Predicts sigma points, the state, and the state covariance matrix.
