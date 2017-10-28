@@ -128,7 +128,7 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
     return;
   }
 
-//STILL NEED TO DO CALCULATIONS, FIX P INITIALIZATION, TO PREP FOR AND THEN CALL PREDICTION AND UPDATE FUNCTIONS
+//STILL NEED TO DO CALCULATIONS TO PREP FOR AND THEN CALL PREDICTION AND UPDATE FUNCTIONS
 
 /**
  * Predicts sigma points, the state, and the state covariance matrix.
@@ -147,26 +147,33 @@ void UKF::Prediction(double delta_t) {
 //SIGMA POINTS
 //*********************************************************************
 
-  //calculate square root of P
-  MatrixXd A = P.llt().matrixL();
+  //create augmented mean vector
+  VectorXd x_aug = VectorXd(7);
 
-  //set first column of sigma point matrix
-  Xsig.col(0)  = x;
+  //create augmented state covariance
+  MatrixXd P_aug = MatrixXd(7, 7);
 
-  //set remaining sigma points
-  for (int i = 0; i < n_x; i++)
+  //create augmented mean state
+  x_aug.head(5) = x_;
+  x_aug(5) = 0;
+  x_aug(6) = 0;
+
+  //create augmented covariance matrix
+  P_aug.fill(0.0);
+  P_aug.topLeftCorner(5,5) = P;
+  P_aug(5,5) = std_a*std_a;
+  P_aug(6,6) = std_yawdd*std_yawdd;
+
+  //create square root matrix
+  MatrixXd L = P_aug.llt().matrixL();
+
+  //create augmented sigma points
+  Xsig_aug.col(0)  = x_aug;
+  for (int i = 0; i< n_aug; i++)
   {
-    Xsig.col(i+1)     = x + sqrt(lambda+n_x) * A.col(i);
-    Xsig.col(i+1+n_x) = x - sqrt(lambda+n_x) * A.col(i);
+    Xsig_aug.col(i+1)       = x_aug + sqrt(lambda+n_aug) * L.col(i);
+    Xsig_aug.col(i+1+n_aug) = x_aug - sqrt(lambda+n_aug) * L.col(i);
   }
-
-
-
-
-
-
-
-
 
 
 
