@@ -63,7 +63,7 @@ UKF::UKF() {
   weights(0) = weight_0;
   
   for (int i=1; i<2*n_aug+1; i++) {  
-    double weight = 0.5/(n_aug+lambda_);
+    double weight = 0.5/(n_aug_+lambda_);
     weights(i) = weight;
   }
 
@@ -191,7 +191,7 @@ void UKF::Prediction(double dt) {
   for (int i = 0; i< n_aug_; i++)
   {
     Xsig_aug.col(i+1)       = x_aug + sqrt(lambda_+n_aug_) * L.col(i);
-    Xsig_aug.col(i+1+n_aug) = x_aug - sqrt(lambda_+n_aug_) * L.col(i);
+    Xsig_aug.col(i+1+n_aug_) = x_aug - sqrt(lambda_+n_aug_) * L.col(i);
   }
 
 
@@ -382,7 +382,7 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
 void UKF::UpdateRadar(MeasurementPackage meas_package) {
   /**
   TODO:
-
+	
   Complete this function! Use radar data to update the belief about the object's
   position. Modify the state vector, x_, and covariance, P_.
 
@@ -394,6 +394,8 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
 	
 //Establish radar measurement vector dimension
   int n_z = 3;
+
+  const double m_PI = 3.141592;
 
  //create matrix for sigma points in measurement space
   MatrixXd Zsig = MatrixXd(n_z, 2 * n_aug_ + 1);	
