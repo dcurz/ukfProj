@@ -113,7 +113,7 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
 
     // Initialize covariance matrix
     //P_ = MatrixXd(5, 5);
-    P_ << 		1, 0, 0, 0,0,
+    P_ << 	1, 0, 0, 0, 0,
          		0, 1, 0, 0, 0,
          		0, 0, 100, 0, 0,
          		0, 0, 0, 2, 0,
@@ -123,7 +123,7 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
   
     weights_(0) = weight_0;
   
-    for (int i=1; i<2*n_aug_+1; i++) {  
+    for (int i=1; i<weights_.size(); i++) {  
       double weight = 0.5/(n_aug_+lambda_);
       weights_(i) = weight;
     }
@@ -177,9 +177,10 @@ void UKF::Prediction(double dt) {
   MatrixXd P_aug = MatrixXd(7, 7);
 
   //create augmented mean state
+  x_aug.fill(0.0);
   x_aug.head(5) = x_;
-  x_aug(5) = 0;
-  x_aug(6) = 0;
+  //x_aug(5) = 0;
+  //x_aug(6) = 0;
 
   //create augmented covariance matrix
   P_aug.fill(0.0);
