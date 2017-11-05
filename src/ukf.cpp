@@ -47,19 +47,21 @@ UKF::UKF() {
   std_radrd_ = 0.3;
 
   ///* State dimension
-  int n_x_ = 5;
+  n_x_ = 5;
 
   ///* Augmented state dimension
-  int n_aug_ = 7; 
+  n_aug_ = 7; 
 
   ///* Sigma point spreading parameter
-  double lambda_ = 3 - n_aug_;
+  lambda_ = 3 - n_aug_;
 
   ///* Weights of sigma points
   weights_ = VectorXd(2*n_aug_+1);
    
   //sigma points matrix
-  MatrixXd Xsig = MatrixXd(n_x_, 2 * n_x_ + 1);
+  Xsig = MatrixXd(n_x_, 2 * n_x_ + 1);
+
+  Xsig_pred = MatrixXd(n_x_, 2 * n_aug_ + 1);
 }
 
 
@@ -211,7 +213,7 @@ void UKF::Prediction(double dt) {
   // float dt_3 = dt_2 * dt;
   // float dt_4 = dt_3 * dt;
 
-  MatrixXd Xsig_pred = MatrixXd(n_x_, 2 * n_aug_ + 1);
+  //MatrixXd Xsig_pred = MatrixXd(n_x_, 2 * n_aug_ + 1);
 
   //predict sigma points
   for (int i = 0; i< 2*n_aug_+1; i++)
