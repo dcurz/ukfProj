@@ -112,7 +112,7 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
     }
 
     // Initialize covariance matrix
-    P_ = MatrixXd(5, 5);
+    //P_ = MatrixXd(5, 5);
     P_ << 		1, 0, 0, 0,0,
          		0, 1, 0, 0, 0,
          		0, 0, 100, 0, 0,
@@ -146,7 +146,7 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
 	  	UpdateLidar(meas_package);
 	}
 
-    return;
+    //return;
 }
 
 
