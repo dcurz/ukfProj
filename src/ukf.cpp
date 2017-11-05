@@ -327,7 +327,7 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
   //for (int i=0; i < 2*n_aug_+1; i++) {
   //    z_pred = z_pred + weights_(i) * Zsig.col(i);
   //}
-  z_pred = Zsig * weights_
+  z_pred = Zsig * weights_;
 
   //measurement covariance matrix S
   MatrixXd S = MatrixXd(n_z,n_z);
