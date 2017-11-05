@@ -167,7 +167,7 @@ void UKF::Prediction(double dt) {
   //create augmented mean vector
   VectorXd x_aug = VectorXd(7);
 
-  MatrixXd Xsig_aug = MatrixXd(7,7);
+  MatrixXd Xsig_aug = MatrixXd(n_x_, 2 * n_aug_ + 1);
 
   //create augmented state covariance
   MatrixXd P_aug = MatrixXd(7, 7);
