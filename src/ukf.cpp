@@ -11,6 +11,8 @@ using std::vector;
  * Initializes Unscented Kalman filter
  */
 UKF::UKF() {
+  is_initialized_ = false;
+
   // if this is false, laser measurements will be ignored (except during init)
   use_laser_ = true;
 
@@ -54,19 +56,8 @@ UKF::UKF() {
   double lambda_ = 3 - n_aug_;
 
   ///* Weights of sigma points
-  VectorXd weights = VectorXd(2*n_aug_+1);
+  weights_ = VectorXd(2*n_aug_+1);
    
-  double weight_0 = lambda_/(lambda_+n_aug_);
-
-  long long previous_timestamp_;
-  
-  weights(0) = weight_0;
-  
-  for (int i=1; i<2*n_aug_+1; i++) {  
-    double weight = 0.5/(n_aug_+lambda_);
-    weights(i) = weight;
-  }
-
   //sigma points matrix
   MatrixXd Xsig = MatrixXd(n_x_, 2 * n_x_ + 1);
 }
@@ -114,6 +105,10 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
       Initialize state.
       */
       x_<<meas_package.raw_measurements_[0], meas_package.raw_measurements_[1],0,0,0;
+      if (fabs(x_(0)) < .001 and fabs(x_(1)) < .001){
+        x_(0) = .001;
+        x_(1) = .001;       
+      }
     }
 
     // Initialize covariance matrix
@@ -123,6 +118,15 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
          		0, 0, 100, 0, 0,
          		0, 0, 0, 2, 0,
          		0, 0, 0, 0, 5;
+
+    double weight_0 = lambda_/(lambda_+n_aug_);
+  
+    weights_(0) = weight_0;
+  
+    for (int i=1; i<2*n_aug_+1; i++) {  
+      double weight = 0.5/(n_aug_+lambda_);
+      weights_(i) = weight;
+    }
 
     previous_timestamp_ = meas_package.timestamp_;
     // done initializing, no need to predict or update
@@ -135,10 +139,10 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
 
 	Prediction(dt);
 
-	if (meas_package.sensor_type_ == MeasurementPackage::RADAR) {
+	if (meas_package.sensor_type_ == MeasurementPackage::RADAR && use_radar_) {
 		UpdateRadar(meas_package);
 	}
-	else {
+	if (meas_package.sensor_type_ == MeasurementPackage::LASER && use_laser_) {
 	  	UpdateLidar(meas_package);
 	}
 
