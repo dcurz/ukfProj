@@ -26,10 +26,10 @@ UKF::UKF() {
   P_ = MatrixXd(5, 5);
 
   // Process noise standard deviation longitudinal acceleration in m/s^2
-  std_a_ = 30;
+  std_a_ = 2.0;
 
   // Process noise standard deviation yaw acceleration in rad/s^2
-  std_yawdd_ = 30;
+  std_yawdd_ = .57;
 
   // Laser measurement noise standard deviation position1 in m
   std_laspx_ = 0.15;
@@ -117,9 +117,9 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
     //P_ = MatrixXd(5, 5);
     P_ << 	1, 0, 0, 0, 0,
          		0, 1, 0, 0, 0,
-         		0, 0, 100, 0, 0,
-         		0, 0, 0, 2, 0,
-         		0, 0, 0, 0, 5;
+         		0, 0, 1, 0, 0,
+         		0, 0, 0, 1, 0,
+         		0, 0, 0, 0, 1;
 
     double weight_0 = lambda_/(lambda_+n_aug_);
   
@@ -308,7 +308,7 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
   //Establish laser measurement vector dimension
   int n_z = 2;
 
-  MatrixXd Xsig_pred = MatrixXd(n_x_, 2 * n_aug_ + 1);
+  //MatrixXd Xsig_pred = MatrixXd(n_x_, 2 * n_aug_ + 1);
 
   //create matrix for sigma points in measurement space
   MatrixXd Zsig = MatrixXd(n_z, 2 * n_aug_ + 1);	
